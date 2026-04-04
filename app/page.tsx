@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { SearchBar } from "@/components/search/search-bar";
 
 export default function HomePage() {
   return (
@@ -12,13 +13,15 @@ export default function HomePage() {
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
             Buy and sell products from trusted sellers across Tunisia.
           </p>
+
+          {/* Search bar in hero */}
+          <div className="flex justify-center mb-8">
+            <SearchBar />
+          </div>
+
           <div className="flex gap-4 justify-center">
-            <Button size="lg" asChild>
-              <a href="/shop">Start Shopping</a>
-            </Button>
-            <Button size="lg" variant="outline" asChild>
-              <a href="/auth/register">Start Selling</a>
-            </Button>
+            <Button size="lg" href="/shop">Start Shopping</Button>
+            <Button size="lg" variant="outline" href="/auth/register">Start Selling</Button>
           </div>
         </div>
       </section>
@@ -30,7 +33,7 @@ export default function HomePage() {
           {["Electronics", "Fashion", "Home & Garden", "Sports"].map((cat) => (
             <a
               key={cat}
-              href={`/shop?category=${cat.toLowerCase().replace(/ & /g, "-")}`}
+              href={`/search?category=${cat.toLowerCase().replace(/ & /g, "-")}`}
               className="block p-6 rounded-lg border hover:border-emerald-300 hover:shadow-sm transition"
             >
               <h3 className="font-medium text-gray-900">{cat}</h3>
