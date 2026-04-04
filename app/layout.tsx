@@ -48,6 +48,9 @@ async function Header() {
           <a href="/shop" className="text-sm text-gray-600 hover:text-gray-900">
             Shop
           </a>
+          <a href="/search" className="text-sm text-gray-600 hover:text-gray-900">
+            Search
+          </a>
         </div>
 
         <div className="flex items-center gap-4">

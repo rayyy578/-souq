@@ -1,6 +1,7 @@
 import { formatPrice } from "@/lib/utils";
 import { notFound } from "next/navigation";
 import { AddToCartButton } from "@/components/product/add-to-cart";
+import { ProductReviews } from "@/components/product/product-reviews";
 
 export default async function ProductPage({
   params,
@@ -75,9 +76,14 @@ export default async function ProductPage({
           )}
 
           <div className="pt-4 border-t text-sm text-gray-500">
-            <p>Category: {product.category.replace(/-/g, " & ").replace(/\b\w/g, (c) => c.toUpperCase())}</p>
+            <p>Category: {product.category.replace(/-/g, " & ").replace(/\b\w/g, (c: string) => c.toUpperCase())}</p>
           </div>
         </div>
+      </div>
+
+      {/* Reviews Section */}
+      <div className="mt-12 border-t border-gray-200 pt-8">
+        <ProductReviews productId={id} />
       </div>
     </div>
   );
