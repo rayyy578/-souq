@@ -11,22 +11,34 @@ export async function GET(request: NextRequest) {
   const search = searchParams.get("search");
   const offset = (page - 1) * limit;
 
-  let query = supabase
+  const { data: products, error, count } = await supabase
     .from("products")
-    .select(`*, sellers(store_name, approved)`, { count: "exact" })
+    .select("*", { count: "exact" })
     .eq("is_active", true)
     .order("created_at", { ascending: false })
     .range(offset, offset + limit - 1);
 
-  if (category) {
-    query = query.eq("category", category);
+  if (error) {
+    return NextResponse.json(
+      { success: false, error: error.message },
+      { status: 500 }
+    );
   }
 
-  if (search) {
-    query = query.ilike("name", `%${search}%`);
-  }
+  // Fetch sellers separately
+  let data = products || [];
+  if (data.length > 0) {
+    const sellerIds = [...new Set(data.map((p) => p.seller_id))];
+    const { data: sellersData } = await supabase
+      .from("sellers")
+      .select("id, store_name, approved")
+      .in("id", sellerIds);
 
-  const { data, error, count } = await query;
+    data = data.map((product) => {
+      const seller = sellersData?.find((s) => s.id === product.seller_id);
+      return { ...product, sellers: seller || null };
+    });
+  }
 
   if (error) {
     return NextResponse.json(
