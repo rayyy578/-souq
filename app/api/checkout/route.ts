@@ -77,7 +77,7 @@ export async function POST(request: Request) {
     );
     const commission = Math.round(total * COMMISSION_RATE);
 
-    const paymentIntent = await stripe.paymentIntents.create({
+    const paymentIntent = await stripe().paymentIntents.create({
       amount: total,
       currency: "tnd",
       payment_method_types: ["card"],
