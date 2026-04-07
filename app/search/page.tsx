@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { SearchBar } from "@/components/search/search-bar";
 import { FilterPanel } from "@/components/search/filter-panel";
@@ -29,7 +30,7 @@ function SearchSkeleton() {
   );
 }
 
-export default function SearchPage() {
+function SearchContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -195,5 +196,13 @@ export default function SearchPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<SearchSkeleton />}>
+      <SearchContent />
+    </Suspense>
   );
 }
