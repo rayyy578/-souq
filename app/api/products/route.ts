@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
 
   let query = supabase
     .from("products")
-    .select(`*, sellers!inner(store_name, approved)`, { count: "exact" })
+    .select(`*, sellers(store_name, approved)`, { count: "exact" })
     .eq("is_active", true)
     .order("created_at", { ascending: false })
     .range(offset, offset + limit - 1);
