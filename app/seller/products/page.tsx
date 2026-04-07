@@ -14,8 +14,11 @@ export default function SellerProductsPage() {
     price_millimes: "",
     stock: "",
     category: "",
-    images: "",
   });
+  const [imageFiles, setImageFiles] = useState<FileList | null>(null);
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
+  const [uploadedUrls, setUploadedUrls] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     loadProducts();
@@ -29,27 +32,72 @@ export default function SellerProductsPage() {
       });
   };
 
+  const uploadImages = async () => {
+    if (!imageFiles) return [];
+
+    const urls: string[] = [];
+    for (let i = 0; i < imageFiles.length; i++) {
+      const file = imageFiles[i];
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const json = await res.json();
+      if (!json.success) {
+        alert(`Failed to upload ${file.name}: ${json.error}`);
+        continue;
+      }
+      urls.push(json.url);
+    }
+    return urls;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setUploading(true);
 
-    const res = await fetch("/api/products", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...form,
-        price_millimes: parseFloat(form.price_millimes) * 1000,
-        stock: parseInt(form.stock) || 0,
-        images: form.images ? form.images.split(",").map((s) => s.trim()) : [],
-      }),
-    });
+    try {
+      const urls = await uploadImages();
+      setUploadedUrls(urls);
 
-    const json = await res.json();
-    if (json.success) {
-      setShowForm(false);
-      setForm({ name: "", description: "", price_millimes: "", stock: "", category: "", images: "" });
-      loadProducts();
+      const res = await fetch("/api/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...form,
+          price_millimes: parseFloat(form.price_millimes) * 1000,
+          stock: parseInt(form.stock) || 0,
+          images: urls,
+        }),
+      });
+
+      const json = await res.json();
+      if (json.success) {
+        setShowForm(false);
+        setForm({ name: "", description: "", price_millimes: "", stock: "", category: "" });
+        setImageFiles(null);
+        setImagePreviewUrls([]);
+        setUploadedUrls([]);
+        loadProducts();
+      } else {
+        alert(json.error);
+      }
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleFilesChange = (files: FileList | null) => {
+    setImageFiles(files);
+    if (files) {
+      const urls = Array.from(files).map((f) => URL.createObjectURL(f));
+      setImagePreviewUrls(urls);
     } else {
-      alert(json.error);
+      setImagePreviewUrls([]);
     }
   };
 
@@ -108,13 +156,33 @@ export default function SellerProductsPage() {
             onChange={(e) => setForm({ ...form, category: e.target.value })}
             required
           />
-          <Input
-            label="Image URLs (comma separated)"
-            value={form.images}
-            onChange={(e) => setForm({ ...form, images: e.target.value })}
-            placeholder="https://example.com/img1.jpg, https://example.com/img2.jpg"
-          />
-          <Button type="submit">Create Product</Button>
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-gray-700">
+              Product Images (up to 5)
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={(e) => handleFilesChange(e.target.files)}
+              className="w-full text-sm"
+            />
+            {imagePreviewUrls.length > 0 && (
+              <div className="flex gap-2 flex-wrap mt-2">
+                {imagePreviewUrls.map((url, i) => (
+                  <img
+                    key={i}
+                    src={url}
+                    alt={`Preview ${i + 1}`}
+                    className="w-20 h-20 object-cover rounded border"
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+          <Button type="submit" disabled={uploading}>
+            {uploading ? "Uploading images..." : "Create Product"}
+          </Button>
         </form>
       )}
 

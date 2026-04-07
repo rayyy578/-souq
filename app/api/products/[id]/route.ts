@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
 export async function GET(
@@ -6,23 +6,43 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const supabase = await createClient();
+  console.log("Fetching product:", id);
 
-  const { data, error } = await supabase
+  // First try without join
+  const supabase = await createAdminClient();
+  const { data: rawProduct, error: rawError } = await supabase
     .from("products")
-    .select(`*, sellers(store_name, description as store_description, user_id)`)
+    .select("*")
     .eq("id", id)
     .eq("is_active", true)
     .single();
 
-  if (error) {
+  console.log("Raw product result:", JSON.stringify(rawProduct));
+  console.log("Raw product error:", rawError);
+
+  if (rawError || !rawProduct) {
     return NextResponse.json(
-      { success: false, error: "Product not found" },
+      { success: false, error: "Product not found", details: rawError },
       { status: 404 }
     );
   }
 
-  return NextResponse.json({ success: true, data });
+  // Get seller separately
+  const { data: seller, error: sellerError } = await supabase
+    .from("sellers")
+    .select("store_name, description, user_id")
+    .eq("id", rawProduct.seller_id)
+    .single();
+
+  console.log("Seller result:", JSON.stringify(seller));
+  console.log("Seller error:", sellerError);
+
+  const product = {
+    ...rawProduct,
+    sellers: seller,
+  };
+
+  return NextResponse.json({ success: true, data: product });
 }
 
 export async function PATCH(

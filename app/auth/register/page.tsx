@@ -20,6 +20,7 @@ export default function RegisterPage() {
   const [role, setRole] = useState<"buyer" | "seller">("buyer");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
@@ -29,7 +30,7 @@ export default function RegisterPage() {
 
     const validation = registerSchema.safeParse({ name, email, password });
     if (!validation.success) {
-      setError(validation.error.errors[0].message);
+      setError(validation.error.issues[0].message);
       return;
     }
 
@@ -51,9 +52,39 @@ export default function RegisterPage() {
     }
 
     if (data.user) {
-      router.push("/auth/login");
+      setSent(true);
     }
   };
+
+  if (sent) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <div className="w-full max-w-md space-y-6">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900">Check your email</h1>
+            <p className="mt-4 text-sm text-gray-600">
+              We&apos;ve sent a confirmation link to <strong>{email}</strong>.
+              Please click the link to verify your email before signing in.
+            </p>
+            <div className="mt-6 space-y-3">
+              <a
+                href="/auth/login"
+                className="block px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700"
+              >
+                Go to login
+              </a>
+              <button
+                onClick={() => setSent(false)}
+                className="text-sm text-emerald-600 hover:underline"
+              >
+                Didn&apos;t receive it? Try again
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">

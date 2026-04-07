@@ -1,8 +1,8 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
   const { searchParams } = new URL(request.url);
 
   const page = parseInt(searchParams.get("page") || "1");
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
 
   let query = supabase
     .from("products")
-    .select(`*, sellers(store_name, approved)`, { count: "exact" })
+    .select(`*, sellers!inner(store_name, approved)`, { count: "exact" })
     .eq("is_active", true)
     .order("created_at", { ascending: false })
     .range(offset, offset + limit - 1);

@@ -33,13 +33,13 @@ export default async function ShopPage({
     next: { revalidate: 60 },
   });
   const json = await res.json();
-  const { data, pagination } = json;
+  const { data, pagination, error: apiError } = json;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">
-          {cat ? `${cat.replace("-", " & ").replace(/\b\w/g, (c) => c.toUpperCase())} Category` : "All Products"}
+          {cat ? `${cat.replace("-", " & ").replace(/\b\w/g, (c: string) => c.toUpperCase())} Category` : "All Products"}
         </h1>
 
         <form className="flex gap-2 mb-4" action="/shop" method="GET">
@@ -75,13 +75,17 @@ export default async function ShopPage({
                 cat === c ? "bg-emerald-100 border-emerald-300 text-emerald-800" : "hover:bg-gray-100"
               }`}
             >
-              {c.replace("-", " & ").replace(/\b\w/g, (ch) => ch.toUpperCase())}
+              {c.replace("-", " & ").replace(/\b\w/g, (ch: string) => ch.toUpperCase())}
             </a>
           ))}
         </div>
       </div>
 
-      {data?.length === 0 ? (
+      {apiError ? (
+        <div className="text-center py-12 text-red-500">
+          Error loading products: {apiError}
+        </div>
+      ) : data?.length === 0 ? (
         <div className="text-center py-12 text-gray-500">
           No products found.
         </div>
@@ -116,7 +120,7 @@ export default async function ShopPage({
             ))}
           </div>
 
-          {pagination.pages > 1 && (
+          {pagination?.pages > 1 && (
             <div className="flex justify-center gap-2 mt-8">
               {Array.from({ length: pagination.pages }, (_, i) => i + 1).map((p) => (
                 <a

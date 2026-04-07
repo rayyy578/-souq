@@ -60,7 +60,7 @@ export async function POST(request: Request) {
   }
 
   // For simplicity, create one payment intent per seller
-  const paymentIntents: { sellerId: string; paymentIntentId: string }[] = [];
+  const paymentIntents: { sellerId: string; clientSecret: string | null; paymentIntentId: string }[] = [];
 
   for (const seller of sellers) {
     if (!seller.stripe_account_id) {
@@ -93,12 +93,16 @@ export async function POST(request: Request) {
       },
     });
 
-    paymentIntents.push({ sellerId: seller.id, paymentIntentId: paymentIntent.id });
+    paymentIntents.push({
+      sellerId: seller.id,
+      paymentIntentId: paymentIntent.id,
+      clientSecret: paymentIntent.client_secret,
+    });
   }
 
   return NextResponse.json({
     success: true,
     paymentIntents,
-    clientSecrets: paymentIntents.map((pi) => pi.paymentIntentId),
+    clientSecrets: paymentIntents.map((pi) => pi.clientSecret),
   });
 }
