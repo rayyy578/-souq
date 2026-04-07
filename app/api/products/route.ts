@@ -29,10 +29,17 @@ export async function GET(request: NextRequest) {
   let data = products || [];
   if (data.length > 0) {
     const sellerIds = [...new Set(data.map((p) => p.seller_id))];
-    const { data: sellersData } = await supabase
+    const { data: sellersData, error: sellersError } = await supabase
       .from("sellers")
       .select("id, store_name, approved")
       .in("id", sellerIds);
+
+    if (sellersError) {
+      return NextResponse.json(
+        { success: false, error: sellersError.message },
+        { status: 500 }
+      );
+    }
 
     data = data.map((product) => {
       const seller = sellersData?.find((s) => s.id === product.seller_id);
@@ -40,12 +47,16 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  if (error) {
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 }
-    );
-  }
+  return NextResponse.json({
+    success: true,
+    data,
+    pagination: {
+      total: count || 0,
+      page,
+      limit,
+      pages: Math.ceil((count || 0) / limit),
+    },
+  });
 
   return NextResponse.json({
     success: true,
