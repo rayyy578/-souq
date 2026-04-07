@@ -93,32 +93,39 @@ export default async function ShopPage({
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {data?.map((product) => (
-              <a
-                key={product.id}
-                href={`/product/${product.id}`}
-                className="block rounded-lg border p-4 hover:shadow-md transition hover:border-emerald-300"
-              >
-                <div className="aspect-square bg-gray-100 rounded-md mb-3 overflow-hidden">
-                  {product.images?.[0] ? (
-                    <img
-                      src={product.images[0]}
-                      alt={product.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400">
-                      No image
+            {data?.map((product, index) => {
+              try {
+                return (
+                  <a
+                    key={product.id}
+                    href={`/product/${product.id}`}
+                    className="block rounded-lg border p-4 hover:shadow-md transition hover:border-emerald-300"
+                  >
+                    <div className="aspect-square bg-gray-100 rounded-md mb-3 overflow-hidden">
+                      {product.images?.[0] ? (
+                        <img
+                          src={product.images[0]}
+                          alt={product.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                          No image
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-                <h3 className="font-medium text-gray-900 truncate">{product.name}</h3>
-                <p className="text-sm text-gray-500 truncate">{product.sellers?.store_name}</p>
-                <p className="text-lg font-bold text-emerald-600 mt-1">
-                  {formatPrice(product.price_millimes)}
-                </p>
-              </a>
-            ))}
+                    <h3 className="font-medium text-gray-900 truncate">{product.name}</h3>
+                    <p className="text-sm text-gray-500 truncate">{product.sellers?.store_name}</p>
+                    <p className="text-lg font-bold text-emerald-600 mt-1">
+                      {formatPrice(product.price_millimes)}
+                    </p>
+                  </a>
+                );
+              } catch (err) {
+                console.error("Error rendering product", index, product, err);
+                return null;
+              }
+            })}
           </div>
 
           {pagination?.pages > 1 && (
