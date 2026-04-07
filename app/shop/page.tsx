@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { formatPrice } from "@/lib/utils";
 
 const CATEGORIES = [

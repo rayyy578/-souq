@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { SearchBar } from "@/components/search/search-bar";
 
@@ -15,9 +16,11 @@ export default function HomePage() {
           </p>
 
           {/* Search bar in hero */}
-          <div className="flex justify-center mb-8">
-            <SearchBar />
-          </div>
+          <Suspense fallback={<div className="h-10 w-96 bg-gray-100 rounded mx-auto" />}>
+            <div className="flex justify-center mb-8">
+              <SearchBar />
+            </div>
+          </Suspense>
 
           <div className="flex gap-4 justify-center">
             <Button size="lg" href="/shop">Start Shopping</Button>
