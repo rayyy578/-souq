@@ -93,7 +93,7 @@ export default async function ShopPage({
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {data?.map((product: { id: string; name: string; description: string; price_millimes: number; images: string[]; sellers: { store_name: string } }) => (
+            {data?.map((product) => (
               <a
                 key={product.id}
                 href={`/product/${product.id}`}
