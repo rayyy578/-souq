@@ -36,13 +36,24 @@ export default async function ShopPage({
   const json = await res.json();
   const { data, pagination, error: apiError } = json;
 
-  // Debug: return simple text first
   if (apiError) {
-    return <div>API Error: {apiError}</div>;
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="text-center py-12 text-red-500">
+          Error loading products: {apiError}
+        </div>
+      </div>
+    );
   }
 
   if (!data || data.length === 0) {
-    return <div>No products found</div>;
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="text-center py-12 text-gray-500">
+          No products found.
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -91,9 +102,52 @@ export default async function ShopPage({
         </div>
       </div>
 
-      <div className="text-center py-12">
-        Found {data.length} products
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {data.map((product) => (
+          <a
+            key={product.id}
+            href={`/product/${product.id}`}
+            className="block rounded-lg border p-4 hover:shadow-md transition hover:border-emerald-300"
+          >
+            <div className="aspect-square bg-gray-100 rounded-md mb-3 overflow-hidden">
+              {product.images?.[0] ? (
+                <img
+                  src={product.images[0]}
+                  alt={product.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-gray-400">
+                  No image
+                </div>
+              )}
+            </div>
+            <h3 className="font-medium text-gray-900 truncate">{product.name}</h3>
+            <p className="text-sm text-gray-500 truncate">{product.sellers?.store_name}</p>
+            <p className="text-lg font-bold text-emerald-600 mt-1">
+              {formatPrice(product.price_millimes)}
+            </p>
+          </a>
+        ))}
       </div>
+
+      {pagination?.pages > 1 && (
+        <div className="flex justify-center gap-2 mt-8">
+          {Array.from({ length: pagination.pages }, (_, i) => i + 1).map((p) => (
+            <a
+              key={p}
+              href={`/shop?${cat ? `category=${cat}&` : ""}page=${p}`}
+              className={`px-3 py-1 rounded ${
+                p === page
+                  ? "bg-emerald-600 text-white"
+                  : "hover:bg-gray-100"
+              }`}
+            >
+              {p}
+            </a>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
